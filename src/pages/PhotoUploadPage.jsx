@@ -1,119 +1,84 @@
-import React, { useState, useEffect } from "react";
-import { NavLink, Link } from "react-router-dom";
-import "./PhotoUploadPage.css";
+import React, { useState, useEffect, useRef } from "react";
+import * as tf from "@tensorflow/tfjs";
+import * as mobilenet from "@tensorflow-models/mobilenet";
+import Nav from "../components/Nav";
+import "./CSS/PhotoUploadPage.css";
 
-// 헤더 컴포넌트
-function Header() {
-  return (
-    <header>
-      <div className="header-content">
-        <div className="logo-placeholder">
-          <a href="/">{/* 로고 이미지 추가 */}</a>
-        </div>
-        <nav className="nav-menu">
-          <ul>
-            <li>
-              <NavLink to="/" activeClassName="active">
-                견종분석
-              </NavLink>
-            </li>
-            <li>
-              <NavLink to="/behavior-analysis" activeClassName="active">
-                행동분석
-              </NavLink>
-            </li>
-            <li>
-              <NavLink to="/diary" activeClassName="active">
-                다이어리
-              </NavLink>
-            </li>
-            <li>
-              <NavLink to="/login" activeClassName="active">
-                로그인
-              </NavLink>
-            </li>
-            <li>
-              <NavLink to="/signup" activeClassName="active">
-                회원가입
-              </NavLink>
-            </li>
-          </ul>
-        </nav>
-      </div>
-    </header>
-  );
-}
+const PhotoUploadPage = () => {
+  const [predictions, setPredictions] = useState([]);
+  const imgRef = useRef(null);
+  const inputRef = useRef(null);
 
-// 이미지 업로드 컴포넌트
-function ImageUpload({ onImageChange, previewUrl }) {
-  return (
-    <div className="photo-placeholder">
-      <input
-        type="file"
-        accept="image/*"
-        onChange={onImageChange}
-        style={{ display: "none" }}
-        id="upload-photo"
-        aria-label="이미지 업로드"
-      />
-      <label htmlFor="upload-photo" className="upload-label">
-        {previewUrl ? (
-          <img src={previewUrl} alt="미리 보기" className="preview-image" />
-        ) : (
-          "사진 영역"
-        )}
-      </label>
-    </div>
-  );
-}
+  useEffect(() => {
+    const loadModelAndClassify = async (imgElement) => {
+      const model = await mobilenet.load();
 
-// 설명 및 버튼 컴포넌트
-function CallToAction({ selectedImage }) {
-  return (
-    <div className="text-area">
-      <h2>우리 찡찡이님의 사진을 넣어주세요</h2>
-      <Link to="/breed-result">
-        <button className="action-button" disabled={!selectedImage}>
-          견종 확인하기!
-        </button>
-      </Link>
-    </div>
-  );
-}
+      const predictions = await model.classify(imgElement);
+      setPredictions(predictions);
+    };
 
-function PhotoUploadPage() {
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState(null);
+    const imgElement = imgRef.current;
+    if (imgElement) {
+      imgElement.onload = () => loadModelAndClassify(imgElement);
+    }
+  }, []);
 
-  const handleImageChange = (event) => {
+  const handleImageUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
-      setSelectedImage(file);
-      setPreviewUrl(URL.createObjectURL(file));
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        imgRef.current.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
     }
   };
 
-  useEffect(() => {
-    return () => {
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
-      }
-    };
-  }, [previewUrl]);
-
   return (
-    <div className="container">
-      <Header />
-      <div className="separator"></div>
-      <main className="main-content">
-        <ImageUpload
-          onImageChange={handleImageChange}
-          previewUrl={previewUrl}
+    <div>
+      <Nav />
+      <div className="container">
+        <h2>사진을 업로드 해주세요</h2>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleImageUpload}
+          ref={inputRef}
         />
-        <CallToAction selectedImage={selectedImage} />
-      </main>
+        <div className="image-des-box">
+          <div className="image-preview">
+            <img
+              id="img"
+              src="/por.jpg"
+              alt="image to classify"
+              ref={imgRef}
+              width={380}
+              height={380}
+            />
+          </div>
+          <div className="predictions">
+            <h3>분류 결과:</h3>
+            {predictions.length > 0 ? (
+              predictions.map((prediction, index) => (
+                <div key={index} className="prediction-bar">
+                  <p>{prediction.className}</p>
+                  <div className="bar">
+                    <div
+                      className="bar-inner"
+                      style={{ width: `${prediction.probability * 100}%` }}
+                    ></div>
+                  </div>
+                  <p>{(prediction.probability * 100).toFixed(2)}%</p>
+                </div>
+              ))
+            ) : (
+              <p>예시입니다.</p>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
-}
+};
 
 export default PhotoUploadPage;

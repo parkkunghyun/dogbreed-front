@@ -1,5 +1,5 @@
 import React from "react";
-import "./BehaviorAnalysisResultPage.css";
+import "./CSS/BehaviorAnalysisResultPage.css";
 import Nav from "../components/Nav";
 
 function BehaviorAnalysisResultPage() {

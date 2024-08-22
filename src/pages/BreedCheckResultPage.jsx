@@ -1,5 +1,5 @@
 import React from "react";
-import "./BreedCheckResultPage.css";
+import "./CSS/BreedCheckResultPage.css";
 import Nav from "../components/Nav";
 
 function BreedCheckResultPage() {
