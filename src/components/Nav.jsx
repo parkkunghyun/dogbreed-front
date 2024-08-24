@@ -14,9 +14,9 @@ const Nav = () => {
 
       <nav className="nav-menu">
         <ul>
-          <li>
+          {/* <li>
             <a href="/photo-upload">견종분석</a>
-          </li>
+          </li> */}
           <li>
             <a href="/behavior-analysis">행동분석</a>
           </li>

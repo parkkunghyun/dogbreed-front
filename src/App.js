@@ -6,7 +6,6 @@ import BehaviorAnalysisPage from "./pages/BehaviorAnalysisPage";
 import BehaviorAnalysisResultPage from "./pages/BehaviorAnalysisResultPage";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
-import Home from "./pages/Home";
 import Diary from "./pages/Diary";
 
 function App() {
